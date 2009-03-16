@@ -59,6 +59,9 @@ Var
   x : Integer;
 begin
   GPacket := Nil;
+  RegPacket := Nil;
+  NotPacket := Nil;
+  
   Try
     GPacket := TGrowlPacket.Create(AData);
 
@@ -83,7 +86,13 @@ begin
       Log('Exception: %s', [E.Message]);
       
       If (GPacket <> Nil) Then
-        GPacket.Free()
+        GPacket.Free();
+
+      If (RegPacket <> Nil) Then
+        RegPacket.Free();
+
+      If (NotPacket <> Nil) Then
+        NotPacket.Free();
     End;
   End;
 end;

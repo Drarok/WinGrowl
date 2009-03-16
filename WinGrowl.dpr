@@ -4,7 +4,8 @@ uses
   Forms,
   uMain in 'uMain.pas' {frmMain},
   uGrowlTypes in 'uGrowlTypes.pas',
-  md5 in 'md5.pas';
+  md5 in 'md5.pas',
+  uIntegerList in 'uIntegerList.pas';
 
 {$R *.RES}
 

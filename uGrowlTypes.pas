@@ -4,7 +4,8 @@ interface
 
 Uses
   Classes,
-  IdGlobal;
+  IdGlobal,
+  uIntegerList;
 
 Const
   GROWL_PROTOCOL_VERSION = 1;
@@ -30,7 +31,6 @@ Type
     FRawData : TBytes;
     FStream : TMemoryStream;
     FPacketHeader : TGrowlPacketHeader;
-    FChecksum : Array[0..15] Of Char;
 
     // Common to both types of packet
     FAppNameLength : Word;
@@ -39,9 +39,9 @@ Type
     // Used to flip the endian-ness before use.
     Function GetAppNameLength() : Word;
 
-    Procedure GetChecksum();
+    Function CompareChecksums(Password : String) : Boolean;
   Public
-    Constructor Create(AData : TBytes); Reintroduce; Virtual;
+    Constructor Create(AData : TBytes; Password : String); Reintroduce; Virtual;
     Destructor Destroy(); Override;
 
     Property Header : TGrowlPacketHeader Read FPacketHeader;
@@ -56,16 +56,16 @@ Type
     FNotificationCount : Byte;
     FDefaultCount : Byte;
     FNotifications : TStringList;
-    FDefaults : TList;
+    FDefaults : TIntegerList;
   public
-    Constructor Create(AData : TBytes); Override;
+    Constructor Create(AData : TBytes; Password : String); Override;
     Destructor Destroy(); Override;
     Property AppNameLength : Word Read GetAppNameLength;
     Property NotificationCount : Byte Read FNotificationCount;
     Property DefaultCount : Byte Read FDefaultCount;
     Property AppName : String Read FAppName;
     Property Notifications : TStringList Read FNotifications;
-    Property Defaults : TList Read FDefaults;
+    Property Defaults : TIntegerList Read FDefaults;
   End; {TGrowlRegistrationPacket}
 
   TGrowlNotificationPacket = Class(TGrowlPacket)
@@ -85,7 +85,7 @@ Type
     Function GetTitleLength() : Word;
     Function GetDescriptionLength() : Word;
   public
-    Constructor Create(AData : TBytes); Override;
+    Constructor Create(AData : TBytes; Password : String); Override;
     Destructor Destroy(); Override;
 
     Property Flags : Word Read GetFlags;
@@ -98,6 +98,8 @@ implementation
 
 Uses
   SysUtils,
+  Windows,
+  Dialogs, {TODO: Remove}
   md5;
 
 // Change endianness of a 16 bit integer.
@@ -109,7 +111,7 @@ End;
 
 { TGrowlPacket }
 
-constructor TGrowlPacket.Create(AData: TBytes);
+constructor TGrowlPacket.Create(AData: TBytes; Password : String);
 begin
   Inherited Create();
   FRawData := AData;
@@ -121,6 +123,9 @@ begin
 
   If (FPacketHeader.Version <> GROWL_PROTOCOL_VERSION) Then
     Raise Exception.CreateFmt('Invalid packet received (%d)', [FPacketHeader.Version]);
+
+  If (Not CompareChecksums(Password)) Then
+    Raise Exception.Create('Invalid password in packet');
 end;
 
 destructor TGrowlPacket.Destroy;
@@ -134,19 +139,31 @@ begin
   Result := SwapWord(FAppNameLength);
 end;
 
-procedure TGrowlPacket.GetChecksum;
-begin
-  FStream.Read(FChecksum, SizeOf(FChecksum));
-end;
-
 function TGrowlPacket.GetRegistractionPacket: TGrowlRegistrationPacket;
 begin
-  Result := TGrowlRegistrationPacket.Create(FRawData);
+  Result := TGrowlRegistrationPacket.Create(FRawData, );
 end;
 
 function TGrowlPacket.GetNotificationPacket: TGrowlNotificationPacket;
 begin
   Result := TGrowlNotificationPacket.Create(FRawData);
+end;
+
+function TGrowlPacket.CompareChecksums: Boolean;
+Var
+  Context : MD5Context;
+  Checksum,
+  Final : MD5Digest;
+  TempRaw : Array Of Const;
+begin
+  TempRaw := AllocMem(Length(FRawData
+  MD5Init(Context);
+  MD5Update(Context, PChar(@FRawData[0]), Length(FRawData) - 16);
+  MD5Final(Context, Final);
+
+  CopyMemory(@Checksum[0], @FRawData[Length(FRawData) - 16], 16);
+
+  Result := MD5Match(Checksum, Final);
 end;
 
 { TGrowlRegistrationPacket }
@@ -177,14 +194,12 @@ begin
     FNotifications.Add(sName);
   End;
 
-  FDefaults := TList.Create();
+  FDefaults := TIntegerList.Create();
   For x := 0 To FDefaultCount - 1 Do
   Begin
     FStream.Read(sDefault, SizeOf(sDefault));
-    FDefaults.Add(Pointer(sDefault));
+    FDefaults.Add(sDefault);
   End;
-
-  GetChecksum();
 end;
 
 destructor TGrowlRegistrationPacket.Destroy;
