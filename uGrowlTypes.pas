@@ -141,22 +141,22 @@ end;
 
 function TGrowlPacket.GetRegistractionPacket: TGrowlRegistrationPacket;
 begin
-  Result := TGrowlRegistrationPacket.Create(FRawData, );
+  Result := TGrowlRegistrationPacket.Create(FRawData, ''); {TODO}
 end;
 
 function TGrowlPacket.GetNotificationPacket: TGrowlNotificationPacket;
 begin
-  Result := TGrowlNotificationPacket.Create(FRawData);
+  Result := TGrowlNotificationPacket.Create(FRawData, ''); {TODO}
 end;
 
-function TGrowlPacket.CompareChecksums: Boolean;
+function TGrowlPacket.CompareChecksums(Password : String): Boolean;
 Var
   Context : MD5Context;
   Checksum,
   Final : MD5Digest;
-  TempRaw : Array Of Const;
+//  TempRaw : Array Of Const;
 begin
-  TempRaw := AllocMem(Length(FRawData
+//  TempRaw := AllocMem(Length(FRawData
   MD5Init(Context);
   MD5Update(Context, PChar(@FRawData[0]), Length(FRawData) - 16);
   MD5Final(Context, Final);
@@ -168,7 +168,7 @@ end;
 
 { TGrowlRegistrationPacket }
 
-constructor TGrowlRegistrationPacket.Create(AData : TBytes);
+constructor TGrowlRegistrationPacket.Create(AData : TBytes; Password : String);
 Var
   x : Integer;
   nLength : Word;
@@ -211,7 +211,7 @@ end;
 
 { TGrowlNotificationPacket }
 
-constructor TGrowlNotificationPacket.Create(AData: TBytes);
+constructor TGrowlNotificationPacket.Create(AData: TBytes; Password : String);
 begin
   inherited;
   FStream.Read(FFlags, SizeOf(FFlags));
