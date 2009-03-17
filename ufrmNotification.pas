@@ -11,7 +11,6 @@ type
     Gradient1: TGradient;
     lblTitle: TLabel;
     lblDescription: TLabel;
-    procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormClick(Sender: TObject);
   private
@@ -62,15 +61,9 @@ End;
 procedure TfrmNotification.CreateParams(var Params: TCreateParams);
 Const
   WS_EX_LAYERED : Cardinal = $80000;
-  WS_EX_TRANSPARENT : Cardinal = $20;
 begin
   inherited;
-  Params.ExStyle := Params.ExStyle Or WS_EX_LAYERED;// Or WS_EX_TRANSPARENT;
-end;
-
-procedure TfrmNotification.FormCreate(Sender: TObject);
-begin
-//  SetLayeredWindowAttributes(Handle, 0, 0, lwAlpha);
+  Params.ExStyle := Params.ExStyle Or WS_EX_LAYERED;
 end;
 
 procedure TfrmNotification.Show;

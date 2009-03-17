@@ -15,10 +15,8 @@ object frmNotification: TfrmNotification
   FormStyle = fsStayOnTop
   OldCreateOrder = False
   Position = poDefault
-  OnActivate = FormCreate
   OnClick = FormClick
   OnClose = FormClose
-  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 14
   object Gradient1: TGradient

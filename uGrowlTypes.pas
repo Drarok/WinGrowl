@@ -28,6 +28,7 @@ Type
   Private
   Protected
     // Base declarations.
+    FPassword : String;
     FRawData : TBytes;
     FStream : TMemoryStream;
     FPacketHeader : TGrowlPacketHeader;
@@ -99,7 +100,6 @@ implementation
 Uses
   SysUtils,
   Windows,
-  Dialogs, {TODO: Remove}
   md5;
 
 // Change endianness of a 16 bit integer.
@@ -114,6 +114,8 @@ End;
 constructor TGrowlPacket.Create(AData: TBytes; Password : String);
 begin
   Inherited Create();
+  FPassword := Password;
+  
   FRawData := AData;
   FStream := TMemoryStream.Create();
   FStream.Write(AData[0], Length(AData));
@@ -124,7 +126,7 @@ begin
   If (FPacketHeader.Version <> GROWL_PROTOCOL_VERSION) Then
     Raise Exception.CreateFmt('Invalid packet received (%d)', [FPacketHeader.Version]);
 
-  If (Not CompareChecksums(Password)) Then
+  If (Not CompareChecksums(FPassword)) Then
     Raise Exception.Create('Invalid password in packet');
 end;
 
@@ -141,25 +143,23 @@ end;
 
 function TGrowlPacket.GetRegistractionPacket: TGrowlRegistrationPacket;
 begin
-  Result := TGrowlRegistrationPacket.Create(FRawData, ''); {TODO}
+  Result := TGrowlRegistrationPacket.Create(FRawData, FPassword);
 end;
 
 function TGrowlPacket.GetNotificationPacket: TGrowlNotificationPacket;
 begin
-  Result := TGrowlNotificationPacket.Create(FRawData, ''); {TODO}
+  Result := TGrowlNotificationPacket.Create(FRawData, FPassword);
 end;
 
 function TGrowlPacket.CompareChecksums(Password : String): Boolean;
 Var
-  Context : MD5Context;
   Checksum,
   Final : MD5Digest;
-//  TempRaw : Array Of Const;
+  s : String;
 begin
-//  TempRaw := AllocMem(Length(FRawData
-  MD5Init(Context);
-  MD5Update(Context, PChar(@FRawData[0]), Length(FRawData) - 16);
-  MD5Final(Context, Final);
+  s := BytesToString(FRawData, 0, Length(FRawData) - 16);
+  s := s + Password;
+  Final := MD5String(s);
 
   CopyMemory(@Checksum[0], @FRawData[Length(FRawData) - 16], 16);
 

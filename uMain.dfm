@@ -41,7 +41,6 @@ object frmMain: TfrmMain
     OnClick = Button2Click
   end
   object IdUDPServer1: TIdUDPServer
-    OnStatus = IdUDPServer1Status
     Bindings = <>
     DefaultPort = 9887
     OnUDPRead = IdUDPServer1UDPRead

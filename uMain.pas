@@ -76,7 +76,7 @@ begin
   NotPacket := Nil;
   
   Try
-    GPacket := TGrowlPacket.Create(AData, '');
+    GPacket := TGrowlPacket.Create(AData, 'password');
 
     Case GPacket.Header.PacketType Of
       GROWL_TYPE_REGISTRATION: Begin
