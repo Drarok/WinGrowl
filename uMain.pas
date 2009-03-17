@@ -14,6 +14,8 @@ type
     lstLog: TListBox;
     Button1: TButton;
     tmrHoover: TTimer;
+    Button2: TButton;
+    Timer1: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure IdUDPServer1Status(ASender: TObject;
       const AStatus: TIdStatus; const AStatusText: String);
@@ -21,9 +23,13 @@ type
       ABinding: TIdSocketHandle);
     procedure Button1Click(Sender: TObject);
     procedure tmrHooverTimer(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure Timer1Timer(Sender: TObject);
   private
     { Private declarations }
     FNotifications : TNotificationList;
+
+    Procedure NewNotification(Title, Description : String);
   public
     { Public declarations }
     Procedure Log(s: String; a : Array Of Const);
@@ -82,9 +88,7 @@ begin
       GROWL_TYPE_NOTIFICATION: Begin
         Log('Got a notify packet', []);
         NotPacket := GPacket.GetNotificationPacket();
-        Log(NotPacket.Notification, []);
-        Log(NotPacket.Title, []);
-        Log(NotPacket.Description, []);
+        NewNotification(NotPacket.Title+' - '+NotPacket.Notification, NotPacket.Description);
       End;
     End; {Case}
   Except
@@ -105,12 +109,8 @@ begin
 end;
 
 procedure TfrmMain.Button1Click(Sender: TObject);
-Var
-  frmNotification : TfrmNotification;
 begin
-  frmNotification := TfrmNotification.Create(Self, 'Title', 'Description');
-  frmNotification.Show();
-  FNotifications.Add(frmNotification);
+  NewNotification('Test', 'Testing the growl');
 end;
 
 procedure TfrmMain.tmrHooverTimer(Sender: TObject);
@@ -133,6 +133,30 @@ begin
       End;
     End;
   End;
+end;
+
+procedure TfrmMain.Button2Click(Sender: TObject);
+begin
+  Timer1.Enabled := True;
+end;
+
+procedure TfrmMain.Timer1Timer(Sender: TObject);
+begin
+  Timer1.Enabled := False;
+  Button1Click(Sender);
+end;
+
+procedure TfrmMain.NewNotification(Title, Description: String);
+Var
+  frmNot : TfrmNotification;
+begin
+  frmNot := TfrmNotification.Create(Self, Title, Description);
+
+  frmNot.Left := Screen.Width - frmNot.Width - 8;
+  frmNot.Top := (frmNot.Height + 8) * FNotifications.Count + 1;
+
+  FNotifications.Add(frmNot);
+  frmNot.Show();
 end;
 
 end.

@@ -14,6 +14,7 @@ object frmNotification: TfrmNotification
   Font.Style = []
   FormStyle = fsStayOnTop
   OldCreateOrder = False
+  Position = poDefault
   OnActivate = FormCreate
   OnClick = FormClick
   OnClose = FormClose
