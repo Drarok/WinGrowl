@@ -68,7 +68,7 @@ object frmNotification: TfrmNotification
   end
   object tmrLifetime: TTimer
     Enabled = False
-    Interval = 3000
+    Interval = 6500
     OnTimer = tmrLifetimeTimer
     Left = 88
     Top = 16
