@@ -40,16 +40,20 @@ object frmMain: TfrmMain
     TabOrder = 2
     OnClick = Button2Click
   end
+  object Button3: TButton
+    Left = 384
+    Top = 72
+    Width = 75
+    Height = 25
+    Caption = 'Button3'
+    TabOrder = 3
+    OnClick = Button3Click
+  end
   object IdUDPServer1: TIdUDPServer
     Bindings = <>
     DefaultPort = 9887
     OnUDPRead = IdUDPServer1UDPRead
     Left = 48
-    Top = 16
-  end
-  object tmrHoover: TTimer
-    OnTimer = tmrHooverTimer
-    Left = 120
     Top = 16
   end
   object Timer1: TTimer

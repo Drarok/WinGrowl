@@ -4,32 +4,28 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls,
-  IdGlobal, IdBaseComponent, IdComponent, IdUDPBase, IdUDPServer, IdSocketHandle,
-  ufrmNotification, ExtCtrls;
+  StdCtrls, IdGlobal, IdBaseComponent, IdComponent, IdUDPBase, IdUDPServer,
+  IdSocketHandle, ufrmNotification, ExtCtrls;
 
 type
   TfrmMain = class(TForm)
     IdUDPServer1: TIdUDPServer;
     lstLog: TListBox;
     Button1: TButton;
-    tmrHoover: TTimer;
     Button2: TButton;
     Timer1: TTimer;
+    Button3: TButton;
     procedure FormCreate(Sender: TObject);
     procedure IdUDPServer1Status(ASender: TObject;
       const AStatus: TIdStatus; const AStatusText: String);
     procedure IdUDPServer1UDPRead(Sender: TObject; AData: TBytes;
       ABinding: TIdSocketHandle);
     procedure Button1Click(Sender: TObject);
-    procedure tmrHooverTimer(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
   private
     { Private declarations }
-    FNotifications : TNotificationList;
-
-    Procedure NewNotification(Title, Description : String);
   public
     { Public declarations }
     Procedure Log(s: String; a : Array Of Const);
@@ -51,11 +47,11 @@ Uses
 procedure TfrmMain.Log(s: String; a : Array Of Const);
 begin
   lstLog.Items.Add(Format(s, a));
+  lstLog.ItemIndex := lstLog.Items.Count - 1;
 end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
-  FNotifications := TNotificationList.Create();
   IdUDPServer1.Active := True;
 end;
 
@@ -88,7 +84,7 @@ begin
       GROWL_TYPE_NOTIFICATION: Begin
         Log('Got a notify packet', []);
         NotPacket := GPacket.GetNotificationPacket();
-        NewNotification(NotPacket.Title+' - '+NotPacket.Notification, NotPacket.Description);
+        TfrmNotification.Factory(NotPacket.Title+' - '+NotPacket.Notification, NotPacket.Description);
       End;
     End; {Case}
   Except
@@ -110,33 +106,7 @@ end;
 
 procedure TfrmMain.Button1Click(Sender: TObject);
 begin
-  NewNotification('Test', 'Testing the growl');
-end;
-
-procedure TfrmMain.tmrHooverTimer(Sender: TObject);
-Var
-  x : Integer;
-begin
-  // Clean up the old notifications...
-  For x := (FNotifications.Count - 1) DownTo 0 Do
-  Begin
-    If (FNotifications.Items[x].BirthTime < (Now() - EncodeTime(0, 0, 5, 0))) Then
-    Begin
-      If (FNotifications.Items[x].Visible) Then
-      Begin
-        If (FNotifications.Items[x].Tag = 0) Then
-        Begin
-          Log('Hiding notification %s', [FNotifications.Items[x].lblTitle.Caption]);
-          FNotifications.Items[x].Tag := 1;
-          FNotifications.Items[x].Close();
-        End;
-      End Else Begin
-        Log('Removing notification %s', [FNotifications.Items[x].lblTitle.Caption]);
-        FNotifications.Items[x].Free();
-        FNotifications.Delete(x);
-      End;
-    End;
-  End;
+  TfrmNotification.Factory('Test', 'Testing the growl');
 end;
 
 procedure TfrmMain.Button2Click(Sender: TObject);
@@ -150,17 +120,9 @@ begin
   Button1Click(Sender);
 end;
 
-procedure TfrmMain.NewNotification(Title, Description: String);
-Var
-  frmNot : TfrmNotification;
+procedure TfrmMain.Button3Click(Sender: TObject);
 begin
-  frmNot := TfrmNotification.Create(Self, Title, Description);
-
-  frmNot.Left := Screen.Width - frmNot.Width - 8;
-  frmNot.Top := (frmNot.Height + 8) * FNotifications.Count + 1;
-
-  FNotifications.Add(frmNot);
-  frmNot.Show();
+  lstLog.Clear();
 end;
 
 end.

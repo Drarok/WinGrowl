@@ -6,7 +6,8 @@ uses
   uGrowlTypes in 'uGrowlTypes.pas',
   md5 in 'md5.pas',
   uIntegerList in 'uIntegerList.pas',
-  ufrmNotification in 'ufrmNotification.pas' {frmNotification};
+  ufrmNotification in 'ufrmNotification.pas' {frmNotification},
+  uNotificationList in 'uNotificationList.pas';
 
 {$R *.RES}
 

@@ -12,11 +12,12 @@ object frmNotification: TfrmNotification
   Font.Height = -11
   Font.Name = 'Arial'
   Font.Style = []
-  FormStyle = fsStayOnTop
   OldCreateOrder = False
   Position = poDefault
   OnClick = FormClick
   OnClose = FormClose
+  OnCloseQuery = FormCloseQuery
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 14
   object Gradient1: TGradient
@@ -64,5 +65,19 @@ object frmNotification: TfrmNotification
     Transparent = True
     WordWrap = True
     OnClick = FormClick
+  end
+  object tmrLifetime: TTimer
+    Enabled = False
+    Interval = 3000
+    OnTimer = tmrLifetimeTimer
+    Left = 88
+    Top = 16
+  end
+  object tmrFade: TTimer
+    Enabled = False
+    Interval = 10
+    OnTimer = tmrFadeTimer
+    Left = 152
+    Top = 16
   end
 end

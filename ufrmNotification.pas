@@ -4,59 +4,63 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  Gradient, StdCtrls, Contnrs;
+  Gradient, StdCtrls, Contnrs, ExtCtrls;
 
 type
+  TFadeType = (ftFadeIn, ftFadeOut);
+  
   TfrmNotification = class(TForm)
     Gradient1: TGradient;
     lblTitle: TLabel;
     lblDescription: TLabel;
+    tmrLifetime: TTimer;
+    tmrFade: TTimer;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure tmrLifetimeTimer(Sender: TObject);
+    procedure tmrFadeTimer(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
   private
     { Private declarations }
     FBirthTime : TDateTime;
+    
+    FFadeType : TFadeType;
+    FFadeValue : Integer;
+
+    Procedure Fade(FadeType : TFadeType);
   public
     { Public declarations }
-    Constructor Create(AOwner : TComponent; Title, Description : String); Reintroduce;
-    Procedure CreateParams(var Params: TCreateParams); override;
-    Procedure Show; Reintroduce;
+    constructor Create(AOwner : TComponent; Title, Description : String); reintroduce;
+    procedure CreateParams(var Params: TCreateParams); override;
+    procedure Show; reintroduce;
 
-    Property BirthTime : TDateTime Read FBirthTime;
+    property BirthTime : TDateTime read FBirthTime;
+
+    class function Factory(Title, Description : String) : TfrmNotification;
   end;
-
-  TNotificationList = Class(TList)
-  private
-  protected
-    function Get(Index: Integer): TfrmNotification;
-    procedure Put(Index: Integer; Item: TfrmNotification);
-  public
-    function Add(Item: TfrmNotification): Integer;
-    property Items[Index: Integer]: TfrmNotification read Get write Put; default;
-  End; {TNotificationList}
 
 implementation
 
 {$R *.DFM}
 
 Uses
-  uMain;
+  uMain,
+  uNotificationList;
 
 Const
   lwColorKey : Integer = $1;
   lwAlpha : Integer = $2;
 
+  FADE_MIN : Integer = 0;  
+  FADE_MAX : Integer = 200;
+
+Var
+  Notifications : TNotificationList;
+
 Function SetLayeredWindowAttributes(Hwnd : THandle; crKey : Integer; Alpha : Byte; dwFlags : LongWord) : Boolean; stdcall; External user32;
 
 { TfrmNotification }
-
-Constructor TfrmNotification.Create(AOwner : TComponent; Title, Description : String);
-Begin
-  Inherited Create(AOwner);
-  lblTitle.Caption := Title;
-  lblDescription.Caption := Description;
-  FBirthTime := Now();
-End;
 
 procedure TfrmNotification.CreateParams(var Params: TCreateParams);
 Const
@@ -66,40 +70,21 @@ begin
   Params.ExStyle := Params.ExStyle Or WS_EX_LAYERED;
 end;
 
-procedure TfrmNotification.Show;
-Var
-  x : Integer;
-begin
-  SetWindowPos(Self.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE Or SWP_NOMOVE Or SWP_NOSIZE);
+Constructor TfrmNotification.Create(AOwner : TComponent; Title, Description : String);
+Begin
+  Inherited Create(AOwner);
+  lblTitle.Caption := Title;
+  lblDescription.Caption := Description;
+  FBirthTime := Now();
+  FFadeValue := 0;
+End;
 
-  ShowWindow(Self.Handle, SW_SHOWNOACTIVATE);
+procedure TfrmNotification.Show;
+begin
+  ShowWindow(Handle, SW_SHOWNOACTIVATE);
   Visible := True;
 
-  x := 0;
-  While (x <= 200) Do
-  Begin
-    SetLayeredWindowAttributes(Handle, 0, x, lwAlpha);
-    Application.ProcessMessages();
-    Inc(x, 1);
-    Sleep(1);
-  End;
-end;
-
-{ TNotificationList }
-
-function TNotificationList.Add(Item: TfrmNotification): Integer;
-begin
-  Result := Inherited Add(Item);
-end;
-
-function TNotificationList.Get(Index: Integer): TfrmNotification;
-begin
-  Result := Inherited Get(Index);
-end;
-
-procedure TNotificationList.Put(Index: Integer; Item: TfrmNotification);
-begin
-  Inherited Put(Index, Item);
+  Fade(ftFadeIn);
 end;
 
 procedure TfrmNotification.FormClick(Sender: TObject);
@@ -108,17 +93,111 @@ begin
 end;
 
 procedure TfrmNotification.FormClose(Sender: TObject; var Action: TCloseAction);
-Var
-  x : Integer;
 begin
-  x := 200;
-  While (x >= 0) Do
-  Begin
-    SetLayeredWindowAttributes(Handle, 0, x, lwAlpha);
-    Application.ProcessMessages();
-    Sleep(1);
-    Dec(x, 2);
-  End;
+  frmMain.Log('Removing notification at pos %d.', [Top]);
+  Notifications.Remove(Self);
+  
+  Release();
 end;
+
+procedure TfrmNotification.FormShow(Sender: TObject);
+begin
+  SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE + SWP_NOMOVE + SWP_NOSIZE);
+  tmrLifetime.Enabled := True;
+end;
+
+procedure TfrmNotification.tmrLifetimeTimer(Sender: TObject);
+begin
+  Self.Close();
+end;
+
+class function TfrmNotification.Factory(Title, Description : String): TfrmNotification;
+Var
+  i, x, y : Integer;
+  InnerList : TList;
+  FoundPos : Boolean;
+begin
+  InnerList := Notifications.LockList();
+
+  frmMain.Log('Creating new notification', []);
+
+  Result := TfrmNotification.Create(Nil, Title, Description);
+
+  x := Screen.Width - Result.Width - 8;
+  y := 8;
+
+  FoundPos := False;
+  
+  While (Not FoundPos) Do
+  Begin
+    // Initialise for each loop.
+    FoundPos := True;
+
+    // Loop over all existing notifications.
+    For i := 0 To InnerList.Count - 1 Do
+    Begin
+      // If there's one at this pos, increment and restart.
+      If (TfrmNotification(InnerList.Items[i]).Top = y) And
+         (TfrmNotification(InnerList.Items[i]).Left = x) Then
+      Begin
+        Inc(y, Result.Height + 8);
+
+        If (y + Result.Height >= Screen.Height) Then
+        Begin
+          y := 8;
+          x := x - Result.Width - 8;
+        End;
+
+        FoundPos := False;
+        Break; {Flee the for, no need to check the rest}
+      End; {If}
+    End; {For}
+  End; {While}
+
+  Result.Left := x;
+  Result.Top := y;
+
+  InnerList.Add(Result);
+  Notifications.UnlockList();
+
+  Result.Show();
+end;
+
+procedure TfrmNotification.Fade(FadeType: TFadeType);
+begin
+  FFadeType := FadeType;
+  tmrFade.Enabled := True;
+end;
+
+procedure TfrmNotification.tmrFadeTimer(Sender: TObject);
+begin
+  If (FFadeType = ftFadeIn) Then
+    Inc(FFadeValue, 2)
+  Else
+    Dec(FFadeValue, 2);
+
+  SetLayeredWindowAttributes(Handle, 0, FFadeValue, lwAlpha);
+
+  If (FFadeValue <= FADE_MIN) Or
+     (FFadeValue >= FADE_MAX) Then
+    tmrFade.Enabled := False;
+
+  If (FFadeValue <= FADE_MIN) Then
+    Close();
+end;
+
+procedure TfrmNotification.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+begin
+  CanClose := (FFadeValue <= FADE_MIN);
+
+  If (Not CanClose) Then
+    Fade(ftFadeOut);
+end;
+
+Initialization
+  Notifications := TNotificationList.Create();
+
+Finalization
+  Notifications.Free();
 
 end.
