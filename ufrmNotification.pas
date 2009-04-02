@@ -70,12 +70,17 @@ procedure TfrmNotification.Show;
 Var
   x : Integer;
 begin
+  SetWindowPos(Self.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE Or SWP_NOMOVE Or SWP_NOSIZE);
+
+  ShowWindow(Self.Handle, SW_SHOWNOACTIVATE);
   Visible := True;
 
-  For x := 0 To 200 Do
+  x := 0;
+  While (x <= 200) Do
   Begin
     SetLayeredWindowAttributes(Handle, 0, x, lwAlpha);
     Application.ProcessMessages();
+    Inc(x, 1);
     Sleep(1);
   End;
 end;
@@ -106,11 +111,13 @@ procedure TfrmNotification.FormClose(Sender: TObject; var Action: TCloseAction);
 Var
   x : Integer;
 begin
-  For x := 200 DownTo 0 Do
+  x := 200;
+  While (x >= 0) Do
   Begin
     SetLayeredWindowAttributes(Handle, 0, x, lwAlpha);
     Application.ProcessMessages();
     Sleep(1);
+    Dec(x, 2);
   End;
 end;
 

@@ -120,12 +120,16 @@ begin
   // Clean up the old notifications...
   For x := (FNotifications.Count - 1) DownTo 0 Do
   Begin
-    If (FNotifications.Items[x].BirthTime < (Now() - EncodeTime(0, 0, 3, 0))) Then
+    If (FNotifications.Items[x].BirthTime < (Now() - EncodeTime(0, 0, 5, 0))) Then
     Begin
       If (FNotifications.Items[x].Visible) Then
       Begin
-        Log('Hiding notification %s', [FNotifications.Items[x].lblTitle.Caption]);
-        FNotifications.Items[x].Close();
+        If (FNotifications.Items[x].Tag = 0) Then
+        Begin
+          Log('Hiding notification %s', [FNotifications.Items[x].lblTitle.Caption]);
+          FNotifications.Items[x].Tag := 1;
+          FNotifications.Items[x].Close();
+        End;
       End Else Begin
         Log('Removing notification %s', [FNotifications.Items[x].lblTitle.Caption]);
         FNotifications.Items[x].Free();
