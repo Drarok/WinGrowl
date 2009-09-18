@@ -50,14 +50,14 @@ object frmMain: TfrmMain
     TabOrder = 3
     OnClick = btnClearLogClick
   end
-  object Button1: TButton
+  object btnTestDLL: TButton
     Left = 384
     Top = 128
     Width = 75
     Height = 25
-    Caption = 'Button1'
+    Caption = 'Test DLL'
     TabOrder = 4
-    OnClick = Button1Click
+    OnClick = btnTestDLLClick
   end
   object IdUDPServer1: TIdUDPServer
     Bindings = <>

@@ -58,7 +58,7 @@ end;
 
 function TMutableGrowlPacket.GetPacket: TStream;
 Var
-  s : String;
+  s : AnsiString;
   Digest : MD5Digest;
 begin
   // Get the internal packet stream.

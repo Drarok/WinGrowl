@@ -15,7 +15,7 @@ type
     btnDelayedTest: TButton;
     Timer1: TTimer;
     btnClearLog: TButton;
-    Button1: TButton;
+    btnTestDLL: TButton;
     IdUDPClient1: TIdUDPClient;
     procedure FormCreate(Sender: TObject);
     procedure IdUDPServer1Status(ASender: TObject;
@@ -26,7 +26,7 @@ type
     procedure btnDelayedTestClick(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure btnClearLogClick(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
+    procedure btnTestDLLClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
@@ -45,13 +45,14 @@ implementation
 
 Uses
   uGrowlTypes,
-  uLibWinGrowlMain,
-  uMutableGrowlRegistrationPacket,
-  uMutableGrowlNotificationPacket,
   md5;
 
-Function GetRegistrationPacket() : TMutableGrowlRegistrationPacket; External 'LibWinGrowl.dll';
-Function GetNotificationPacket() : TMutableGrowlNotificationPacket; External 'LibWinGrowl.dll';
+Function CreateRegistrationPacket() : Pointer; External 'LibWinGrowl.dll';
+Procedure FreeRegistrationPacket(Packet : Pointer); External 'LibWinGrowl.dll';
+Procedure Registration_SetAppName(Packet : Pointer; Name : PChar); External 'LibWinGrowl.dll';
+Procedure Registration_AddNotification(Packet : Pointer; Name : PChar; Default : Boolean); External 'LibWinGrowl.dll';
+Procedure Registration_SetPassword(Packet : Pointer; Password : PChar); External 'LibWinGrowl.dll';
+Procedure Registration_SendPacket(Packet : Pointer; Host : PChar; Port : Integer); External 'LibWinGrowl.dll';
 
 { TForm1 }
 
@@ -145,28 +146,17 @@ begin
   lstLog.Clear();
 end;
 
-procedure TfrmMain.Button1Click(Sender: TObject);
+procedure TfrmMain.btnTestDLLClick(Sender: TObject);
 Var
-  Reg : TMutableGrowlRegistrationPacket;
-  Notif : TMutableGrowlNotificationPacket;
-  s : String;
-  Stream : TStream;
+  p : Pointer;
 begin
-  Reg := GetRegistrationPacket();
-  Stream := Reg.GetPacket();
-  SetLength(s, Stream.Size);
-  Stream.ReadBuffer(s[1], Stream.Size);
-  IdUDPClient1.Send('127.0.0.1', 9887, s);
-  Stream.Free();
-  Reg.Free();
-
-  Notif := GetNotificationPacket();
-  Stream := Notif.GetPacket();
-  SetLength(s, Stream.Size);
-  Stream.ReadBuffer(s[1], Stream.Size);
-  IdUDPClient1.Send('127.0.0.1', 9887, s);
-  Stream.Free();
-  Notif.Free();
+  p := CreateRegistrationPacket();
+  Registration_SetAppName(p, PChar('PHP Notifier'));
+  Registration_AddNotification(p, 'Informational', False);
+  Registration_AddNotification(p, 'Warning', True);
+  Registration_SetPassword(p, PChar('password'));
+  Registration_SendPacket(p, PChar('127.0.0.1'), 9887);
+  FreeRegistrationPacket(p);
 end;
 
 procedure TfrmMain.FormDestroy(Sender: TObject);
