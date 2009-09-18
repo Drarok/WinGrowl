@@ -12,6 +12,7 @@ object frmMain: TfrmMain
   Font.Style = []
   OldCreateOrder = False
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object lstLog: TListBox
@@ -22,32 +23,41 @@ object frmMain: TfrmMain
     ItemHeight = 13
     TabOrder = 0
   end
-  object Button1: TButton
+  object btnTest: TButton
     Left = 384
     Top = 8
     Width = 75
     Height = 25
-    Caption = 'Button1'
+    Caption = 'Test'
     TabOrder = 1
-    OnClick = Button1Click
+    OnClick = btnTestClick
   end
-  object Button2: TButton
+  object btnDelayedTest: TButton
     Left = 384
     Top = 40
     Width = 75
     Height = 25
-    Caption = 'Button2'
+    Caption = 'Delayed Test'
     TabOrder = 2
-    OnClick = Button2Click
+    OnClick = btnDelayedTestClick
   end
-  object Button3: TButton
+  object btnClearLog: TButton
     Left = 384
     Top = 72
     Width = 75
     Height = 25
-    Caption = 'Button3'
+    Caption = 'Clear Log'
     TabOrder = 3
-    OnClick = Button3Click
+    OnClick = btnClearLogClick
+  end
+  object Button1: TButton
+    Left = 384
+    Top = 128
+    Width = 75
+    Height = 25
+    Caption = 'Button1'
+    TabOrder = 4
+    OnClick = Button1Click
   end
   object IdUDPServer1: TIdUDPServer
     Bindings = <>
@@ -62,5 +72,10 @@ object frmMain: TfrmMain
     OnTimer = Timer1Timer
     Left = 384
     Top = 72
+  end
+  object IdUDPClient1: TIdUDPClient
+    Port = 0
+    Left = 72
+    Top = 152
   end
 end

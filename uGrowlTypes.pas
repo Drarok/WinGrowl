@@ -95,6 +95,8 @@ Type
     Property Description : String Read FDescription;
   End; {TGrowlPacketNotificationBody}
 
+  Function SwapWord(b : Word) : Word;
+
 implementation
 
 Uses
