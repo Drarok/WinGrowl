@@ -14,18 +14,21 @@ Var
   U : TIdUDPClient;
   RS, NS : TStream;
   D : String;
+  x : Integer;
 begin
 
   R := TMutableGrowlRegistrationPacket.Create();
   R.AppName := ParamStr(1);
-  R.Defaults.Add(R.Notifications.Add('Warning'));
+  R.Defaults.Add(R.Notifications.Add(ParamStr(2)));
   R.Password := 'password';
 
   N := TMutableGrowlNotificationPacket.Create();
   N.AppName := R.AppName;
-  N.Notification := 'Warning';
-  N.Title := ParamStr(2);
-  N.Description := ParamStr(3)+' '+ParamStr(4);
+  N.Notification := ParamStr(2);
+  N.Title := ParamStr(3);
+  N.Description := ParamStr(4)+' ';
+  For x := 5 To ParamCount Do
+    N.Description := N.Description + ParamStr(x); 
   N.Password := R.Password;
 
   U := TIdUDPClient.Create();
