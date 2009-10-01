@@ -59,6 +59,15 @@ object frmMain: TfrmMain
     TabOrder = 4
     OnClick = btnTestDLLClick
   end
+  object btnUDPTest: TButton
+    Left = 384
+    Top = 160
+    Width = 75
+    Height = 25
+    Caption = 'UDP Test'
+    TabOrder = 5
+    OnClick = btnUDPTestClick
+  end
   object IdUDPServer1: TIdUDPServer
     Bindings = <>
     DefaultPort = 9887

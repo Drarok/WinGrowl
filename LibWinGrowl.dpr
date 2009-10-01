@@ -15,11 +15,20 @@ uses
 Exports
   CreateRegistrationPacket,
   FreeRegistrationPacket,
+
   Registration_SetAppName,
   Registration_AddNotification,
   Registration_SetPassword,
-  Registration_SendPacket;
 
+  CreateNotificationPacket,
+  FreeNotificationPacket,
+  Notification_SetAppName,
+  Notification_SetNotification,
+  Notification_SetTitle,
+  Notification_SetDescription,
+  Notification_SetPassword,
+
+  SendPacket;
 begin
 
 end.

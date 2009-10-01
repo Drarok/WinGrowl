@@ -7,12 +7,18 @@ uses
   md5 in 'md5.pas',
   uIntegerList in 'uIntegerList.pas',
   ufrmNotification in 'ufrmNotification.pas' {frmNotification},
-  uNotificationList in 'uNotificationList.pas';
+  uNotificationList in 'uNotificationList.pas',
+  uMutableGrowlRegistrationPacket in 'uMutableGrowlRegistrationPacket.pas',
+  uMutableGrowlPacket in 'uMutableGrowlPacket.pas',
+  uMutableGrowlNotificationPacket in 'uMutableGrowlNotificationPacket.pas';
 
 {$R *.RES}
 
 begin
   Application.Initialize;
+  Application.ShowMainForm := False;
+  Application.Title := 'WinGrowl';
   Application.CreateForm(TfrmMain, frmMain);
+  Application.OnMinimize := frmMain.OnMinimize;
   Application.Run;
 end.

@@ -9,7 +9,7 @@ MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
 DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
-PROJECTS = LibWinGrowl.dll WinGrowl.exe
+PROJECTS = LibWinGrowl.dll WinGrowlCLI.exe WinGrowl.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
@@ -18,6 +18,9 @@ WinGrowl.exe: WinGrowl.dpr
   $(DCC)
 
 LibWinGrowl.dll: LibWinGrowl.dpr
+  $(DCC)
+
+WinGrowlCLI.exe: WinGrowlCLI.dpr
   $(DCC)
 
 

@@ -5,7 +5,10 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, IdGlobal, IdBaseComponent, IdComponent, IdUDPBase, IdUDPServer,
-  IdSocketHandle, ufrmNotification, ExtCtrls, IdUDPClient;
+  IdSocketHandle, ufrmNotification, ExtCtrls, IdUDPClient, ShellAPI;
+
+Const
+  WM_NOTIFY_ICON = WM_USER+100;
 
 type
   TfrmMain = class(TForm)
@@ -17,6 +20,7 @@ type
     btnClearLog: TButton;
     btnTestDLL: TButton;
     IdUDPClient1: TIdUDPClient;
+    btnUDPTest: TButton;
     procedure FormCreate(Sender: TObject);
     procedure IdUDPServer1Status(ASender: TObject;
       const AStatus: TIdStatus; const AStatusText: String);
@@ -28,9 +32,13 @@ type
     procedure btnClearLogClick(Sender: TObject);
     procedure btnTestDLLClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure btnUDPTestClick(Sender: TObject);
+    Procedure OnMinimize(Sender : TObject);
+    Procedure OnNotifyIcon(Var Message : TMessage); Message WM_NOTIFY_ICON;
   private
     { Private declarations }
     FLogFile : TFileStream;
+    FNotifyIconData : TNotifyIconData;
   public
     { Public declarations }
     Procedure Log(s: String; a : Array Of Const);
@@ -45,14 +53,26 @@ implementation
 
 Uses
   uGrowlTypes,
-  md5;
+  md5,
+  uMutableGrowlRegistrationPacket,
+  uMutableGrowlNotificationPacket;
 
 Function CreateRegistrationPacket() : Pointer; External 'LibWinGrowl.dll';
 Procedure FreeRegistrationPacket(Packet : Pointer); External 'LibWinGrowl.dll';
+
 Procedure Registration_SetAppName(Packet : Pointer; Name : PChar); External 'LibWinGrowl.dll';
 Procedure Registration_AddNotification(Packet : Pointer; Name : PChar; Default : Boolean); External 'LibWinGrowl.dll';
 Procedure Registration_SetPassword(Packet : Pointer; Password : PChar); External 'LibWinGrowl.dll';
-Procedure Registration_SendPacket(Packet : Pointer; Host : PChar; Port : Integer); External 'LibWinGrowl.dll';
+
+Function CreateNotificationPacket() : Pointer; External 'LibWinGrowl.dll';
+Procedure FreeNotificationPacket(Packet : Pointer); External 'LibWinGrowl.dll';
+Procedure Notification_SetAppName(Packet : Pointer; Name : PChar); External 'LibWinGrowl.dll';
+Procedure Notification_SetNotification(Packet : Pointer; Notification : PChar); External 'LibWinGrowl.dll';
+Procedure Notification_SetTitle(Packet : Pointer; Title : PChar); External 'LibWinGrowl.dll';
+Procedure Notification_SetDescription(Packet : Pointer; Description : PChar); External 'LibWinGrowl.dll';
+Procedure Notification_SetPassword(Packet : Pointer; Password : PChar); External 'LibWinGrowl.dll';
+
+Procedure SendPacket(Packet : Pointer; Host : PChar; Port : Integer); External 'LibWinGrowl.dll';
 
 { TForm1 }
 
@@ -72,6 +92,18 @@ procedure TfrmMain.FormCreate(Sender: TObject);
 begin
   FLogFile := TFileStream.Create('Log.txt', fmCreate);
   IdUDPServer1.Active := True;
+  With FNotifyIconData Do
+  Begin
+    cbSize := SizeOf(FNotifyIconData);
+    Wnd := Handle;
+    uID := 1;
+    uFlags := NIF_TIP Or NIF_MESSAGE Or NIF_ICON;
+    uCallbackMessage := WM_NOTIFY_ICON;
+    hIcon := Application.Icon.Handle;
+    szTip := 'WinGrowl';
+  End; {With}
+
+  Shell_NotifyIcon(NIM_ADD, @FNotifyIconData);
 end;
 
 procedure TfrmMain.IdUDPServer1Status(ASender: TObject;
@@ -151,17 +183,80 @@ Var
   p : Pointer;
 begin
   p := CreateRegistrationPacket();
-  Registration_SetAppName(p, PChar('PHP Notifier'));
+  Registration_SetAppName(p, PChar(Application.Title));
   Registration_AddNotification(p, 'Informational', False);
   Registration_AddNotification(p, 'Warning', True);
-  Registration_SetPassword(p, PChar('password'));
-  Registration_SendPacket(p, PChar('127.0.0.1'), 9887);
+  Registration_SetPassword(p, 'password');
+  SendPacket(p, '127.0.0.1', 9887);
   FreeRegistrationPacket(p);
+
+  p := CreateNotificationPacket();
+  Notification_SetAppName(p, PChar(Application.Title));
+  Notification_SetNotification(p, 'Warning');
+  Notification_SetTitle(p, 'DLL Test');
+  Notification_SetDescription(p, 'This is a test via the DLL');
+  Notification_SetPassword(p, 'password');
+  SendPacket(p, '127.0.0.1', 9887);
+  FreeNotificationPacket(p);
 end;
 
 procedure TfrmMain.FormDestroy(Sender: TObject);
 begin
   FLogFile.Free();
+  Shell_NotifyIcon(NIM_DELETE, @FNotifyIconData);
+end;
+
+procedure TfrmMain.btnUDPTestClick(Sender: TObject);
+  Function StreamToString(stream : TStream) : String;
+  Begin
+    SetLength(Result, stream.Size);
+    stream.ReadBuffer(Result[1], stream.Size);
+  End;
+Var
+  regis : TMutableGrowlRegistrationPacket;
+  notif : TMutableGrowlNotificationPacket;
+  stream : TStream;
+begin
+
+  regis := TMutableGrowlRegistrationPacket.Create();
+  regis.AppName := 'UDP Test App';
+  regis.Defaults.Add(regis.Notifications.Add('Warning'));
+  regis.Password := 'password';
+  stream := regis.GetPacket();
+  regis.Free();
+
+  IdUDPClient1.Send('127.0.0.1', 9887, StreamToString(stream));
+
+  stream.Free();
+
+  notif := TMutableGrowlNotificationPacket.Create();
+  notif.AppName := 'UDP Test App';
+  notif.Notification := 'Warning';
+  notif.Title := 'Title';
+  notif.Description := 'Description';
+  notif.Password := 'password';
+  stream := notif.GetPacket();
+  notif.Free();
+
+  IdUDPClient1.Send('127.0.0.1', 9887, StreamToString(stream));
+
+  stream.Free();
+end;
+
+procedure TfrmMain.OnMinimize(Sender: TObject);
+begin
+  Hide();
+end;
+
+procedure TfrmMain.OnNotifyIcon(var Message: TMessage);
+begin
+   If (Message.LParam = WM_LBUTTONDBLCLK) Then
+   Begin
+    Show();
+    BringToFront();
+    Application.BringToFront();
+    Application.Restore();
+  End;
 end;
 
 end.
