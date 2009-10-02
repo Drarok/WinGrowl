@@ -1,8 +1,5 @@
 program WinGrowlCLI;
 
-uses
-  Classes;
-
 {$R *.RES}
 
   Function CreateRegistrationPacket(AppName, Password : PChar) : Pointer; External 'LibWinGrowl.dll';
