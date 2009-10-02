@@ -39,7 +39,7 @@ MaxStackSize=1048576
 ImageBase=4194304
 ExeDescription=
 [Directories]
-OutputDir=
+OutputDir=..\
 UnitOutputDir=
 PackageDLLOutputDir=
 PackageDCPOutputDir=
@@ -83,3 +83,13 @@ Comments=
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
+[HistoryLists\hlSearchPath]
+Count=1
+Item0=C:\Users\Mat\Delphi\Indy10\Other\Protocols;C:\Users\Mat\Delphi\Indy10\Lib\Protocols;C:\Users\Mat\Delphi\Indy10\Lib\Core
+[HistoryLists\hlUnitOutputDirectory]
+Count=1
+Item0=C:\tmpp\DCU
+[HistoryLists\hlOutputDirectorry]
+Count=2
+Item0=..\
+Item1=..\..\
