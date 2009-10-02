@@ -4,8 +4,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, IdGlobal, IdBaseComponent, IdComponent, IdUDPBase, IdUDPServer,
-  IdSocketHandle, ufrmNotification, ExtCtrls, IdUDPClient, ShellAPI;
+  StdCtrls, ufrmNotification, ExtCtrls, ShellAPI,
+  // All these are needed by Indy to compile.
+  IdBaseComponent, IdComponent, IdUDPBase, IdUDPServer, IdGlobal, IdSocketHandle;
 
 Const
   WM_NOTIFY_ICON = WM_USER+100;
@@ -18,7 +19,6 @@ type
     btnDelayedTest: TButton;
     Timer1: TTimer;
     btnClearLog: TButton;
-    IdUDPClient1: TIdUDPClient;
     procedure FormCreate(Sender: TObject);
     procedure IdUDPServer1Status(ASender: TObject;
       const AStatus: TIdStatus; const AStatusText: String);

@@ -64,9 +64,4 @@ object frmMain: TfrmMain
     Left = 384
     Top = 72
   end
-  object IdUDPClient1: TIdUDPClient
-    Port = 0
-    Left = 72
-    Top = 152
-  end
 end
