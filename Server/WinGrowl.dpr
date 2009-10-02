@@ -2,10 +2,10 @@ program WinGrowl;
 
 uses
   Forms,
+  md5 in '..\Shared\md5.pas',
   uMain in 'uMain.pas' {frmMain},
-  uGrowlTypes in 'uGrowlTypes.pas',
-  md5 in 'md5.pas',
-  uIntegerList in 'uIntegerList.pas',
+  uGrowlTypes in '..\Shared\uGrowlTypes.pas',
+  uIntegerList in '..\Shared\uIntegerList.pas',
   ufrmNotification in 'ufrmNotification.pas' {frmNotification},
   uNotificationList in 'uNotificationList.pas';
 
