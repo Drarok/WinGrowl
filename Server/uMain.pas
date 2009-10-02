@@ -46,6 +46,7 @@ var
 implementation
 
 {$R *.DFM}
+{$R ..\Shared\WinXP.RES}
 
 Uses
   uGrowlTypes,

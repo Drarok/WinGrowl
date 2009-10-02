@@ -4,6 +4,7 @@ Uses
   Windows;
 
 {$R *.RES}
+{$R ..\..\Shared\WinXP.RES}
 
   Function CreateRegistrationPacket(AppName, Password : PChar) : Pointer; External 'LibWinGrowl.dll';
   Procedure FreeRegistrationPacket(Packet : Pointer); External 'LibWinGrowl.dll';
