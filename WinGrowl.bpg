@@ -14,13 +14,12 @@ PROJECTS = LibWinGrowl.dll WinGrowlCLI.exe WinGrowl.exe
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
 
-WinGrowl.exe: WinGrowl.dpr
+WinGrowl.exe: Server\WinGrowl.dpr
   $(DCC)
 
-LibWinGrowl.dll: LibWinGrowl.dpr
+LibWinGrowl.dll: Clients\LibWinGrowl\LibWinGrowl.dpr
   $(DCC)
 
-WinGrowlCLI.exe: WinGrowlCLI.dpr
+WinGrowlCLI.exe: Clients\WinGrowlCLI\WinGrowlCLI.dpr
   $(DCC)
-
 
