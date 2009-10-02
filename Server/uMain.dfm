@@ -50,8 +50,21 @@ object frmMain: TfrmMain
     TabOrder = 3
     OnClick = btnClearLogClick
   end
+  object Button1: TButton
+    Left = 384
+    Top = 128
+    Width = 75
+    Height = 25
+    Caption = 'Button1'
+    TabOrder = 4
+    OnClick = Button1Click
+  end
   object IdUDPServer1: TIdUDPServer
-    Bindings = <>
+    Bindings = <
+      item
+        IP = '0.0.0.0'
+        Port = 9887
+      end>
     DefaultPort = 9887
     OnUDPRead = IdUDPServer1UDPRead
     Left = 48
