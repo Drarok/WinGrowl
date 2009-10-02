@@ -1,5 +1,8 @@
 program WinGrowlCLI;
 
+Uses
+  Windows;
+
 {$R *.RES}
 
   Function CreateRegistrationPacket(AppName, Password : PChar) : Pointer; External 'LibWinGrowl.dll';
@@ -17,6 +20,19 @@ Var
   x : Integer;
   S : String;
 begin
+
+  If (ParamCount() < 4) Then
+  Begin
+    MessageBox(
+      0,
+      'Invalid parameters. Usage:'#13#10
+      +'WinGrowlCLI.exe <Application Name> <Notification Name> <Notification Title> '
+      +'<Notification Description> [Additional Description] [...]',
+      'WinGrowlCLI',
+      MB_ICONERROR
+    );
+    Exit;
+  End;
 
   R := CreateRegistrationPacket(PChar(ParamStr(1)), 'password');
   Registration_AddNotification(R, PChar(ParamStr(2)), True);
