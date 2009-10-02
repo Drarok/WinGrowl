@@ -246,12 +246,14 @@ end;
 procedure TfrmMain.OnMinimize(Sender: TObject);
 begin
   Hide();
+  ShowWindow(Application.Handle, SW_HIDE);
 end;
 
 procedure TfrmMain.OnNotifyIcon(var Message: TMessage);
 begin
    If (Message.LParam = WM_LBUTTONDBLCLK) Then
    Begin
+    ShowWindow(Application.Handle, SW_SHOW);
     Show();
     BringToFront();
     Application.BringToFront();

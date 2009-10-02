@@ -17,22 +17,22 @@ type
     tmrFade: TTimer;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormClick(Sender: TObject);
-    procedure FormShow(Sender: TObject);
     procedure tmrLifetimeTimer(Sender: TObject);
     procedure tmrFadeTimer(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
   private
     { Private declarations }
     FBirthTime : TDateTime;
-    
+
     FFadeType : TFadeType;
     FFadeValue : Integer;
 
     Procedure Fade(FadeType : TFadeType);
+  Protected
+    Procedure CreateParams(var Params: TCreateParams); override;
   public
     { Public declarations }
     constructor Create(AOwner : TComponent; Title, Description : String); reintroduce;
-    procedure CreateParams(var Params: TCreateParams); override;
     procedure Show; reintroduce;
 
     property BirthTime : TDateTime read FBirthTime;
@@ -67,7 +67,21 @@ Const
   WS_EX_LAYERED : Cardinal = $80000;
 begin
   inherited;
-  Params.ExStyle := Params.ExStyle Or WS_EX_LAYERED;
+  With Params Do
+  Begin
+    // WS_EX_APPWINDOW - Show its own taskbar button.
+    // WS_EX_TOPMOST - Really topmost, not Delphi's crap version.
+    // WS_EX_LAYERED - Enable translucent form.
+    ExStyle := ExStyle Or
+//      WS_EX_APPWINDOW Or
+      WS_EX_TOPMOST Or
+      WS_EX_LAYERED;
+
+    // No title bar on the Window.
+    ExStyle := ExStyle And Not WS_CAPTION;
+
+    WndParent := Application.Handle; // GetDesktopWindow();
+  End;
 end;
 
 Constructor TfrmNotification.Create(AOwner : TComponent; Title, Description : String);
@@ -82,7 +96,8 @@ End;
 procedure TfrmNotification.Show;
 begin
   ShowWindow(Handle, SW_SHOWNOACTIVATE);
-  Visible := True;
+  SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE + SWP_NOMOVE + SWP_NOSIZE);
+  tmrLifetime.Enabled := True;
 
   Fade(ftFadeIn);
 end;
@@ -98,12 +113,6 @@ begin
   Notifications.Remove(Self);
   
   Release();
-end;
-
-procedure TfrmNotification.FormShow(Sender: TObject);
-begin
-  SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE + SWP_NOMOVE + SWP_NOSIZE);
-  tmrLifetime.Enabled := True;
 end;
 
 procedure TfrmNotification.tmrLifetimeTimer(Sender: TObject);
