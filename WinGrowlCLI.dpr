@@ -1,55 +1,42 @@
 program WinGrowlCLI;
 
 uses
-  uMutableGrowlRegistrationPacket,
-  uMutableGrowlNotificationPacket,
-  IdUDPClient,
   Classes;
 
 {$R *.RES}
 
+  Function CreateRegistrationPacket(AppName, Password : PChar) : Pointer; External 'LibWinGrowl.dll';
+  Procedure FreeRegistrationPacket(Packet : Pointer); External 'LibWinGrowl.dll';
+  Procedure Registration_AddNotification(Packet : Pointer; Name : PChar; Default : Boolean); External 'LibWinGrowl.dll';
+
+  Function CreateNotificationPacket(AppName, Notification, Title, Description, Password : PChar) : Pointer; External 'LibWinGrowl.dll';
+  Procedure FreeNotificationPacket(Packet : Pointer); External 'LibWinGrowl.dll';
+
+  Procedure SendPacket(Packet : Pointer; Host : PChar; Port : Integer); External 'LibWinGrowl.dll';
+
 Var
-  R : TMutableGrowlRegistrationPacket;
-  N : TMutableGrowlNotificationPacket;
-  U : TIdUDPClient;
-  RS, NS : TStream;
-  D : String;
+  R : Pointer;
+  N : Pointer;
   x : Integer;
+  S : String;
 begin
 
-  R := TMutableGrowlRegistrationPacket.Create();
-  R.AppName := ParamStr(1);
-  R.Defaults.Add(R.Notifications.Add(ParamStr(2)));
-  R.Password := 'password';
+  R := CreateRegistrationPacket(PChar(ParamStr(1)), 'password');
+  Registration_AddNotification(R, PChar(ParamStr(2)), True);
+  SendPacket(R, PChar('127.0.0.1'), 9887);
+  FreeRegistrationPacket(R);
 
-  N := TMutableGrowlNotificationPacket.Create();
-  N.AppName := R.AppName;
-  N.Notification := ParamStr(2);
-  N.Title := ParamStr(3);
-  N.Description := ParamStr(4)+' ';
-  For x := 5 To ParamCount Do
-    N.Description := N.Description + ParamStr(x); 
-  N.Password := R.Password;
+  S := '';
+  For x := 4 To ParamCount() Do
+    S := S + ' '+ParamStr(x);
 
-  U := TIdUDPClient.Create();
-  U.Host := '127.0.0.1';
-  U.Port := 9887;
-
-  RS := R.GetPacket();
-  SetLength(D, RS.Size);
-  RS.ReadBuffer(D[1], RS.Size);
-  RS.Free();
-  R.Free();
-
-  U.Send(D);
-
-  NS := N.GetPacket();
-  SetLength(D, NS.Size);
-  NS.ReadBuffer(D[1], NS.Size);
-  NS.Free();
-  N.Free();
-
-  U.Send(D);
-
-  U.Free();
+  N := CreateNotificationPacket(
+    PChar(ParamStr(1)),
+    PChar(ParamStr(2)),
+    PChar(ParamStr(3)),
+    PChar(S),
+    PChar('password')
+  );
+  SendPacket(N, PChar('127.0.0.1'), 9887);
+  FreeNotificationPacket(N);
 end.
