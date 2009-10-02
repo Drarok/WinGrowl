@@ -8,19 +8,12 @@ Uses
   uMutableGrowlRegistrationPacket,
   uMutableGrowlNotificationPacket;
 
-  Function CreateRegistrationPacket() : Pointer;
+  Function CreateRegistrationPacket(AppName, Password : PChar) : Pointer;
   Procedure FreeRegistrationPacket(Packet : Pointer);
-  Procedure Registration_SetAppName(Packet : Pointer; Name : PChar);
   Procedure Registration_AddNotification(Packet : Pointer; Name : PChar; Default : Boolean);
-  Procedure Registration_SetPassword(Packet : Pointer; Password : PChar);
 
-  Function CreateNotificationPacket() : Pointer;
+  Function CreateNotificationPacket(AppName, Notification, Title, Description, Password : PChar) : Pointer;
   Procedure FreeNotificationPacket(Packet : Pointer);
-  Procedure Notification_SetAppName(Packet : Pointer; Name : PChar);
-  Procedure Notification_SetNotification(Packet : Pointer; Notification : PChar);
-  Procedure Notification_SetTitle(Packet : Pointer; Title : PChar);
-  Procedure Notification_SetDescription(Packet : Pointer; Description : PChar);
-  Procedure Notification_SetPassword(Packet : Pointer; Password : PChar);
 
   Procedure SendPacket(Packet : Pointer; Host : PChar; Port : Integer);
 
@@ -30,19 +23,20 @@ Uses
   SysUtils,
   uMutableGrowlPacket;
 
-Function CreateRegistrationPacket() : Pointer;
+Function CreateRegistrationPacket(AppName, Password : PChar) : Pointer;
+Var
+  p : TMutableGrowlRegistrationPacket;
 Begin
-  Result := TMutableGrowlRegistrationPacket.Create();
+  p := TMutableGrowlRegistrationPacket.Create();
+  p.AppName := String(AppName);
+  p.Password := String(Password);
+
+  Result := p;
 End;
 
 Procedure FreeRegistrationPacket(Packet : Pointer);
 Begin
   TMutableGrowlRegistrationPacket(Packet).Free();
-End;
-
-Procedure Registration_SetAppName(Packet : Pointer; Name : PChar);
-Begin
-  TMutableGrowlRegistrationPacket(Packet).AppName := String(Name);
 End;
 
 Procedure Registration_AddNotification(Packet : Pointer; Name : PChar; Default : Boolean);
@@ -54,44 +48,23 @@ Begin
     TMutableGrowlRegistrationPacket(Packet).Defaults.Add(i);
 End;
 
-Procedure Registration_SetPassword(Packet : Pointer; Password : PChar);
+Function CreateNotificationPacket(AppName, Notification, Title, Description, Password : PChar) : Pointer;
+Var
+  p : TMutableGrowlNotificationPacket;
 Begin
-  TMutableGrowlRegistrationPacket(Packet).Password := String(Password);
-End;
-
-Function CreateNotificationPacket() : Pointer;
-Begin
-  Result := TMutableGrowlNotificationPacket.Create();
+  p := TMutableGrowlNotificationPacket.Create();
+  p.AppName := String(AppName);
+  p.Notification := String(Notification);
+  p.Title := String(Title);
+  p.Description := String(Description);
+  p.Password := String(Password);
+  
+  Result := p;
 End;
 
 Procedure FreeNotificationPacket(Packet : Pointer);
 Begin
   TMutableGrowlNotificationPacket(Packet).Free
-End;
-
-Procedure Notification_SetAppName(Packet : Pointer; Name : PChar);
-Begin
-  TMutableGrowlNotificationPacket(Packet).AppName := String(Name);
-End;
-
-Procedure Notification_SetNotification(Packet : Pointer; Notification : PChar);
-Begin
-  TMutableGrowlNotificationPacket(Packet).Notification := String(Notification);
-End;
-
-Procedure Notification_SetTitle(Packet : Pointer; Title : PChar);
-Begin
-  TMutableGrowlNotificationPacket(Packet).Title := String(Title);
-End;
-
-Procedure Notification_SetDescription(Packet : Pointer; Description : PChar);
-Begin
-  TMutableGrowlNotificationPacket(Packet).Description := String(Description);
-End;
-
-Procedure Notification_SetPassword(Packet : Pointer; Password : PChar);
-Begin
-  TMutableGrowlNotificationPacket(Packet).Password := String(Password);
 End;
 
 Procedure SendPacket(Packet : Pointer; Host : PChar; Port : Integer);

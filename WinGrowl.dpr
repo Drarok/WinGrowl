@@ -7,10 +7,7 @@ uses
   md5 in 'md5.pas',
   uIntegerList in 'uIntegerList.pas',
   ufrmNotification in 'ufrmNotification.pas' {frmNotification},
-  uNotificationList in 'uNotificationList.pas',
-  uMutableGrowlRegistrationPacket in 'uMutableGrowlRegistrationPacket.pas',
-  uMutableGrowlPacket in 'uMutableGrowlPacket.pas',
-  uMutableGrowlNotificationPacket in 'uMutableGrowlNotificationPacket.pas';
+  uNotificationList in 'uNotificationList.pas';
 
 {$R *.RES}
 

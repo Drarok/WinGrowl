@@ -18,9 +18,7 @@ type
     btnDelayedTest: TButton;
     Timer1: TTimer;
     btnClearLog: TButton;
-    btnTestDLL: TButton;
     IdUDPClient1: TIdUDPClient;
-    btnUDPTest: TButton;
     procedure FormCreate(Sender: TObject);
     procedure IdUDPServer1Status(ASender: TObject;
       const AStatus: TIdStatus; const AStatusText: String);
@@ -30,9 +28,7 @@ type
     procedure btnDelayedTestClick(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure btnClearLogClick(Sender: TObject);
-    procedure btnTestDLLClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure btnUDPTestClick(Sender: TObject);
     Procedure OnMinimize(Sender : TObject);
     Procedure OnNotifyIcon(Var Message : TMessage); Message WM_NOTIFY_ICON;
   private
@@ -53,26 +49,7 @@ implementation
 
 Uses
   uGrowlTypes,
-  md5,
-  uMutableGrowlRegistrationPacket,
-  uMutableGrowlNotificationPacket;
-
-Function CreateRegistrationPacket() : Pointer; External 'LibWinGrowl.dll';
-Procedure FreeRegistrationPacket(Packet : Pointer); External 'LibWinGrowl.dll';
-
-Procedure Registration_SetAppName(Packet : Pointer; Name : PChar); External 'LibWinGrowl.dll';
-Procedure Registration_AddNotification(Packet : Pointer; Name : PChar; Default : Boolean); External 'LibWinGrowl.dll';
-Procedure Registration_SetPassword(Packet : Pointer; Password : PChar); External 'LibWinGrowl.dll';
-
-Function CreateNotificationPacket() : Pointer; External 'LibWinGrowl.dll';
-Procedure FreeNotificationPacket(Packet : Pointer); External 'LibWinGrowl.dll';
-Procedure Notification_SetAppName(Packet : Pointer; Name : PChar); External 'LibWinGrowl.dll';
-Procedure Notification_SetNotification(Packet : Pointer; Notification : PChar); External 'LibWinGrowl.dll';
-Procedure Notification_SetTitle(Packet : Pointer; Title : PChar); External 'LibWinGrowl.dll';
-Procedure Notification_SetDescription(Packet : Pointer; Description : PChar); External 'LibWinGrowl.dll';
-Procedure Notification_SetPassword(Packet : Pointer; Password : PChar); External 'LibWinGrowl.dll';
-
-Procedure SendPacket(Packet : Pointer; Host : PChar; Port : Integer); External 'LibWinGrowl.dll';
+  md5;
 
 { TForm1 }
 
@@ -178,69 +155,10 @@ begin
   lstLog.Clear();
 end;
 
-procedure TfrmMain.btnTestDLLClick(Sender: TObject);
-Var
-  p : Pointer;
-begin
-  p := CreateRegistrationPacket();
-  Registration_SetAppName(p, PChar(Application.Title));
-  Registration_AddNotification(p, 'Informational', False);
-  Registration_AddNotification(p, 'Warning', True);
-  Registration_SetPassword(p, 'password');
-  SendPacket(p, '127.0.0.1', 9887);
-  FreeRegistrationPacket(p);
-
-  p := CreateNotificationPacket();
-  Notification_SetAppName(p, PChar(Application.Title));
-  Notification_SetNotification(p, 'Warning');
-  Notification_SetTitle(p, 'DLL Test');
-  Notification_SetDescription(p, 'This is a test via the DLL');
-  Notification_SetPassword(p, 'password');
-  SendPacket(p, '127.0.0.1', 9887);
-  FreeNotificationPacket(p);
-end;
-
 procedure TfrmMain.FormDestroy(Sender: TObject);
 begin
   FLogFile.Free();
   Shell_NotifyIcon(NIM_DELETE, @FNotifyIconData);
-end;
-
-procedure TfrmMain.btnUDPTestClick(Sender: TObject);
-  Function StreamToString(stream : TStream) : String;
-  Begin
-    SetLength(Result, stream.Size);
-    stream.ReadBuffer(Result[1], stream.Size);
-  End;
-Var
-  regis : TMutableGrowlRegistrationPacket;
-  notif : TMutableGrowlNotificationPacket;
-  stream : TStream;
-begin
-
-  regis := TMutableGrowlRegistrationPacket.Create();
-  regis.AppName := 'UDP Test App';
-  regis.Defaults.Add(regis.Notifications.Add('Warning'));
-  regis.Password := 'password';
-  stream := regis.GetPacket();
-  regis.Free();
-
-  IdUDPClient1.Send('127.0.0.1', 9887, StreamToString(stream));
-
-  stream.Free();
-
-  notif := TMutableGrowlNotificationPacket.Create();
-  notif.AppName := 'UDP Test App';
-  notif.Notification := 'Warning';
-  notif.Title := 'Title';
-  notif.Description := 'Description';
-  notif.Password := 'password';
-  stream := notif.GetPacket();
-  notif.Free();
-
-  IdUDPClient1.Send('127.0.0.1', 9887, StreamToString(stream));
-
-  stream.Free();
 end;
 
 procedure TfrmMain.OnMinimize(Sender: TObject);
