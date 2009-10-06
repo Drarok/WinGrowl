@@ -116,7 +116,16 @@ begin
 end;
 
 procedure TfrmNotification.tmrLifetimeTimer(Sender: TObject);
+Var
+  pt : TPoint;
 begin
+  GetCursorPos(pt);
+  If (PtInRect(Self.BoundsRect, pt)) Then
+  Begin
+    tmrLifetime.Interval := 1500;
+    Exit;
+  End;
+
   Self.Close();
 end;
 

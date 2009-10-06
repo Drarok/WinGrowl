@@ -19,7 +19,6 @@ type
     btnDelayedTest: TButton;
     Timer1: TTimer;
     btnClearLog: TButton;
-    Button1: TButton;
     procedure FormCreate(Sender: TObject);
     procedure IdUDPServer1Status(ASender: TObject;
       const AStatus: TIdStatus; const AStatusText: String);
@@ -32,7 +31,6 @@ type
     procedure FormDestroy(Sender: TObject);
     Procedure OnMinimize(Sender : TObject);
     Procedure OnNotifyIcon(Var Message : TMessage); Message WM_NOTIFY_ICON;
-    procedure Button1Click(Sender: TObject);
   private
     { Private declarations }
     FLogFile : TFileStream;
@@ -70,7 +68,12 @@ end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
-  FLogFile := TFileStream.Create('Log.txt', fmCreate);
+  If (Not FileExists('Log.txt')) Then
+    TFileStream.Create('Log.txt', fmCreate).Free();
+
+  FLogFile := TFileStream.Create('Log.txt', fmOpenWrite Or fmShareDenyWrite);
+  FLogFile.Position := FLogFile.Size;
+  
   IdUDPServer1.Active := True;
   With FNotifyIconData Do
   Begin
@@ -180,11 +183,6 @@ begin
     Application.BringToFront();
     Application.Restore();
   End;
-end;
-
-procedure TfrmMain.Button1Click(Sender: TObject);
-begin
-  IdUDPServer1.Send('192.168.254.255', 9887, 'Testing');
 end;
 
 end.
