@@ -118,13 +118,30 @@ end;
 procedure TfrmNotification.tmrLifetimeTimer(Sender: TObject);
 Var
   pt : TPoint;
+  lii : tagLASTINPUTINFO;
 begin
+  // Check if the cursor is inside this notification.
   GetCursorPos(pt);
   If (PtInRect(Self.BoundsRect, pt)) Then
   Begin
+    // Wait a further 1.5 seconds.
     tmrLifetime.Interval := 1500;
     Exit;
   End;
+
+  // Check the computer idle time.
+  ZeroMemory(@lii, SizeOf(lii));
+  lii.cbSize := SizeOf(lii);
+  If (GetLastInputInfo(lii)) Then
+  Begin
+    // Don't close. Wait for a click.
+    If (GetTickCount() - lii.dwTime > 60000) Then
+    Begin
+      tmrLifetime.Enabled := False;
+      Exit;
+    End;
+  End;
+
 
   Self.Close();
 end;

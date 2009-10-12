@@ -13,7 +13,7 @@ uses
 
 begin
   Application.Initialize;
-  Application.ShowMainForm := False;
+  Application.ShowMainForm := (ParamStr(1) = '/show');
   Application.Title := 'WinGrowl';
   Application.CreateForm(TfrmMain, frmMain);
   Application.OnMinimize := frmMain.OnMinimize;
