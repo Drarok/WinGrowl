@@ -56,12 +56,12 @@ ActiveLang=
 ProjectLang=$00000809
 RootDir=
 [Version Info]
-IncludeVerInfo=0
-AutoIncBuild=0
-MajorVer=1
-MinorVer=0
+IncludeVerInfo=1
+AutoIncBuild=1
+MajorVer=0
+MinorVer=2
 Release=0
-Build=0
+Build=54
 Debug=0
 PreRelease=0
 Special=0
@@ -70,15 +70,15 @@ DLL=0
 Locale=2057
 CodePage=1252
 [Version Info Keys]
-CompanyName=
-FileDescription=
-FileVersion=1.0.0.0
+CompanyName=Drarok.com Software
+FileDescription=An implementation of the Growl UDP Protocol
+FileVersion=0.2.0.54
 InternalName=
 LegalCopyright=
 LegalTrademarks=
 OriginalFilename=
 ProductName=
-ProductVersion=1.0.0.0
+ProductVersion=0.2
 Comments=
 [HistoryLists\hlUnitAliases]
 Count=1
