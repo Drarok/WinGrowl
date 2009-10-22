@@ -87,6 +87,8 @@ begin
   End; {With}
 
   Shell_NotifyIcon(NIM_ADD, @FNotifyIconData);
+
+  TfrmNotification.Factory('WinGrowl - Loaded', 'WinGrowl is now running');
 end;
 
 procedure TfrmMain.IdUDPServer1Status(ASender: TObject;
